@@ -1,8 +1,4 @@
 import os
-import subprocess
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 from data import generate_datasets, generate_dataset_summary, generate_plots, train_synthetic_model, \
     create_syncthetic_training_summary, train_real_model
