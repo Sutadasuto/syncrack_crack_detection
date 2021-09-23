@@ -313,11 +313,8 @@ def rotated_version(image, angle):
 
 # Image generators
 def get_image(im_path):
-    # im = cv2.cvtColor(cv2.imread(im_path), cv2.COLOR_BGR2RGB)
-    ### Color debugging
     im = cv2.imread(im_path, cv2.IMREAD_GRAYSCALE)[..., None]
     im = np.concatenate([im, im, im], axis=-1)
-    ###
 
     im = manual_padding(im, n_pooling_layers=4)
     if len(im.shape) == 2:
@@ -709,6 +706,43 @@ def generate_dataset_summary(datasets_folder, category, noise_levels):
     with open(os.path.join(datasets_folder, category, "all_scores.csv"), "w+") as f:
         f.write("\n".join([",".join(line) for line in (header + image_list)]))
 
+    # Create summary of evaluation scores
+    summary_text_path = os.path.join(datasets_folder, category, category, "scores_summary.txt")
+    with open(summary_text_path, 'r') as f:
+        text = f.read()
+    scores = text.split('\n')
+    score_names = [score.split(': ')[0] for score in scores]
+    n_scores = len(score_names)
+    results_grid = np.zeros((n_scores, len(noise_levels))).astype(np.str)
+
+    for j, l in enumerate(noise_levels):
+
+        if noise_levels[j] == 0:
+            summary_text_path = os.path.join(datasets_folder, category, category, "scores_summary.txt")
+        else:
+            summary_text_path = os.path.join(datasets_folder, category, "%s_%s_attacked_label_comparison" %
+                                             (category, l), "scores_summary.txt")
+        with open(summary_text_path, 'r') as f:
+            text = f.read()
+        scores = text.split('\n')
+        score_values = [score.split(': ')[1] for score in scores]
+        for k, score in enumerate(score_values):
+            results_grid[k, j] = score
+
+    metrics_column = np.array([[metric] for metric in score_names])
+    body = np.concatenate((metrics_column, results_grid), axis=1)
+    noise_header = ["" for l in range(len(noise_levels))]
+    noise_header = np.array((noise_header, noise_header)).astype(body.dtype)
+    noise_header[0, 0] = 'noise_percentage'
+    for l, level in enumerate(noise_levels):
+        noise_header[1, l] = level
+    header = np.concatenate(([[""], ["metric"]], noise_header), axis=1)
+    csv_table = np.concatenate((header, body), axis=0)
+    csv_list = [row.tolist() for row in csv_table]
+    csv_string = "\n".join([",".join(row) for row in csv_list])
+    with open(os.path.join(datasets_folder, category, "scores_summary.csv"), "w+") as f:
+        f.write(csv_string)
+
     # Create summary of noise percentages only (confusion matrices)
     confusion_matrices = []
     for noise_level in noise_levels:
@@ -887,7 +921,7 @@ def train_synthetic_model(datasets_folder, results_root, synthetic_training_para
     print("Done running: '%s'" % command)
 
 
-def create_syncthetic_training_summary(results_root, categories, noise_levels):
+def create_synthetic_training_summary(results_root, categories, noise_levels):
     summary_text_path = os.path.join(results_root, "results_%s" % categories[0], "%s_percent_noise" % noise_levels[0],
                                      "results_validation_min_val_loss", "evaluation", "scores_summary.txt")
     with open(summary_text_path, 'r') as f:
@@ -944,3 +978,46 @@ def train_real_model(real_dataset, real_dataset_path, training_parameters, save_
     print("Running: '%s'" % command)
     subprocess.run(command, shell=True)
     print("Done running: '%s'" % command)
+
+
+def create_synthetic_prediction_summary(results_root, real_dataset):
+    summary_text_path = os.path.join(results_root, "results_%s" % real_dataset,
+                                     "results_validation_min_val_loss", "evaluation", "scores_summary.txt")
+    with open(summary_text_path, 'r') as f:
+        text = f.read()
+    scores = text.split('\n\n')[0].split('\n')
+    score_names = [score.split(': ')[0] for score in scores]
+    n_scores = len(score_names)
+
+    pred_folders = sorted([f for f in os.listdir(results_root)
+                                       if not f.startswith(".") and os.path.isdir(os.path.join(results_root, f))],
+                                      key=lambda f: f.lower())
+    real_data_folder = pred_folders.pop(pred_folders.index("results_%s" % real_dataset))
+    pred_folders = [real_data_folder] + pred_folders
+
+    results_grid = np.zeros((n_scores, len(pred_folders))).astype(np.str)
+
+    for i, pred_folder in enumerate(pred_folders):
+
+        summary_text_path = os.path.join(results_root, pred_folder, "results_validation_min_val_loss", "evaluation", "scores_summary.txt")
+
+        with open(summary_text_path, 'r') as f:
+            text = f.read()
+        scores = text.split('\n\n')[0].split('\n')
+        score_values = [score.split(': ')[1] for score in scores]
+        for j, score in enumerate(score_values):
+            results_grid[j, i] = score
+
+    metrics_column = np.array([[metric] for metric in score_names])
+    body = np.concatenate((metrics_column, results_grid), axis=1)
+    model_header = ["" for l in range(len(pred_folders))]
+    model_header = np.array((model_header, model_header)).astype(body.dtype)
+    model_header[0, 0] = 'training_data'
+    for l, pred_folder in enumerate(pred_folders):
+        model_header[1, l] = pred_folder
+    header = np.concatenate(([[""], ["metric"]], model_header), axis=1)
+    csv_table = np.concatenate((header, body), axis=0)
+    csv_list = [row.tolist() for row in csv_table]
+    csv_string = "\n".join([",".join(row) for row in csv_list])
+    with open(os.path.join(results_root, "scores_summary.csv"), "w+") as f:
+        f.write(csv_string)

@@ -1,7 +1,7 @@
 import os
 
 from data import generate_datasets, generate_dataset_summary, generate_plots, train_synthetic_model, \
-    create_syncthetic_training_summary, train_real_model
+    create_synthetic_training_summary, train_real_model, create_synthetic_prediction_summary
 
 ############################################## Solely synthetic data results ##########################################
 
@@ -44,7 +44,9 @@ real_dataset_path = "/media/shared_storage/datasets/CrackForestDatasetPruned"
 
 train_real_network_flag = True
 validate_synthetic_on_real_flag = True
-validate_noisy_models = False
+create_noisy_validation_summary_flag = True
+
+validate_noisy_models = False  # If needed, evaluate the model training with noisy labels on real data
 
 #######################################################################################################################
 
@@ -77,7 +79,7 @@ if train_networks_flag:
 
 if create_training_summary_flag:
     # Create summary of all the results
-    create_syncthetic_training_summary(results_root, list(categories), noise_levels)
+    create_synthetic_training_summary(results_root, list(categories), noise_levels)
 
 
 if train_real_network_flag:
@@ -98,3 +100,7 @@ if validate_synthetic_on_real_flag:
                                                  "results_training_min_val_loss", "uvgg19_best.hdf5")
             save_to = os.path.join("results_%s" % real_dataset, "results_%s_%s_percent_noise" % (category, noisy_model))
             train_real_model(real_dataset, real_dataset_path, validation_args, save_to=save_to)
+
+if create_noisy_validation_summary_flag:
+    # Make a comparison of the results training with real data and the models trained with synthetic data
+    create_synthetic_prediction_summary("results_%s" % real_dataset, real_dataset)
