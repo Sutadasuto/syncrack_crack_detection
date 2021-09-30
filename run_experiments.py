@@ -13,7 +13,7 @@ syncrack_generator = "/home/sutadasuto/Dropbox/ESIEE/PhD/Year_2/Software/syncrac
 # generator as dicts too
 category_args_dict = {
     "easy": {"-bas": "6.0", "-cac": "0.5"},
-    "normal": {"-bas": "3.0", "-cac": "0.7"},
+    "medium": {"-bas": "3.0", "-cac": "0.7"},
     "hard": {"-bas": "1.5", "-cac": "0.7"}
 }
 synthetic_training_parameters = {
