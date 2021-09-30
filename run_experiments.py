@@ -6,9 +6,9 @@ from data import generate_datasets, generate_dataset_summary, generate_plots, tr
 ############################################## Solely synthetic data results ##########################################
 
 # Folder in which the generated datasets will be saved
-datasets_folder = "/media/shared_storage/datasets/syncrack_parametrized"
+datasets_folder = "syncrack_parametrized"
 # Path to Syncrack generator
-syncrack_generator = "/home/sutadasuto/Dropbox/ESIEE/PhD/Year_2/Software/syncrack_generator"
+syncrack_generator = "syncrack_generator"
 # The different datasets to create. It is a dict with dataset name as key, and the arguments to pass to the syncrack
 # generator as dicts too
 category_args_dict = {
@@ -40,7 +40,7 @@ training_parameters = {
 }
 
 real_dataset = "cfd"
-real_dataset_path = "/media/shared_storage/datasets/CrackForestDatasetPruned"
+real_dataset_path = "CrackForestDatasetPruned"
 
 train_real_network_flag = True
 validate_synthetic_on_real_flag = True
