@@ -10,7 +10,7 @@ This repository was developed for Python 3.7.6 and tensorflow-gpu. To install th
 
 ### How to use
 First, download the Syncrack generator repository in the root folder of this repository. 
-Do the same with our pruned version of CFD (uncompress the zip file).
+Do the same with our pruned version of CFD: https://drive.google.com/file/d/1pTZpiIrqWiUocRsULBRqznEtXrwWYVpQ/view?usp=sharing (uncompress the zip file).
 Then, simply run:
 ```
 python run_experiments.py
