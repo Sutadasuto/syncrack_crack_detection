@@ -1,5 +1,8 @@
 # syncrack_crack_detection
-This repository contains the code used to obtain the results presented in (insert paper reference).
+This repository contains the code used to obtain the results presented in:
+```
+Rill-García, R.; Dokladalova, E. and Dokládal, P. (2022). Syncrack: Improving Pavement and Concrete Crack Detection through Synthetic Data Generation.  In Proceedings of the 17th International Joint Conference on Computer Vision, Imaging and Computer Graphics Theory and Applications - Volume 4: VISAPP, ISBN 978-989-758-555-5, ISSN 2184-4321, pages 147-158.   
+```
 
 It is based on the Syncrack generator, a tool aimed to create synthetic pavement/concrete images with accurate annotations for crack detection.
 The most recent version of Syncrack is available at https://github.com/Sutadasuto/syncrack_generator (you must download that repository to use this one).
