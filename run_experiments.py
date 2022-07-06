@@ -17,7 +17,8 @@ category_args_dict = {
     "hard": {"-bas": "1.5", "-cac": "0.7"}
 }
 synthetic_training_parameters = {
-    "-da": "True"
+    "-da": "True",
+    "--in_gray": "True"
 }
 # The different noise levels (percentage from 0 to 100 as integer) to introduce to each of the generated datasets
 noise_levels = [0, 25, 50, 75, 100]
@@ -36,7 +37,7 @@ create_training_summary_flag = True
 ############################################## Real and synthetic data results ########################################
 
 training_parameters = {
-
+    "--in_gray": "True"
 }
 
 real_dataset = "cfd"
@@ -93,7 +94,7 @@ if validate_synthetic_on_real_flag:
     validation_args = {
         "-e": 0,
         "-w": None,
-        "--in_gray": True
+        "--in_gray": "True"
     }
     for category in categories:
         for noisy_model in noisy_models:
