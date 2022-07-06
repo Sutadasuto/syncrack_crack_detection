@@ -92,7 +92,8 @@ if validate_synthetic_on_real_flag:
     noisy_models = noise_levels if validate_noisy_models else [0]
     validation_args = {
         "-e": 0,
-        "-w": None
+        "-w": None,
+        "--in_gray": True
     }
     for category in categories:
         for noisy_model in noisy_models:
