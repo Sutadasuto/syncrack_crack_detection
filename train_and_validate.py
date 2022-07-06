@@ -134,7 +134,7 @@ def main(args):
         try:
             history = model.fit(x=data.train_image_generator(training_paths, input_size, args.batch_size,
                                                              rgb_preprocessor=rgb_preprocessor,
-                                                             data_augmentation=args.use_da),
+                                                             data_augmentation=args.use_da, in_gray=args.in_gray),
                                 epochs=args.epochs,
                                 verbose=1, callbacks=[es, reduce_lr, tensorboard],
                                 steps_per_epoch=n_train_samples // args.batch_size)
@@ -212,6 +212,8 @@ def parse_args(args=None):
     parser.add_argument("-da", "--use_da", type=str, default="False", help="If 'True', training will be done using data "
                                                                    "augmentation. If 'False', just raw images will be "
                                                                    "used.")
+    parser.add_argument("--in_gray", type=str, default="False", help="If true, the images will be transformed to"
+                                                                     "grayscale for training and testing.")
     parser.add_argument("-w", "--pretrained_weights", type=str, default=None,
                         help="Load previous weights from this location.")
     parser.add_argument("--save_to", type=str, default=None,
