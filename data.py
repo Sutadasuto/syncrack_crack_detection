@@ -157,8 +157,11 @@ def paths_generator_concrete(dataset_path):
 def paths_generator_from_text(text_file_path):
     with open(text_file_path, "r") as file:
         lines = file.readlines()
-    paths_array = np.concatenate([np.array([line.strip().split(";")]) for line in lines], axis=0)
-    return paths_array[:, 0], paths_array[:, 1]
+    try:
+        paths_array = np.concatenate([np.array([line.strip().split(";")]) for line in lines], axis=0)
+        return paths_array[:, 0], paths_array[:, 1]
+    except ValueError:
+        return np.array([[], []])
 
 
 ### Loading images for Keras
@@ -312,9 +315,13 @@ def rotated_version(image, angle):
 
 
 # Image generators
-def get_image(im_path):
-    im = cv2.imread(im_path, cv2.IMREAD_GRAYSCALE)[..., None]
-    im = np.concatenate([im, im, im], axis=-1)
+def get_image(im_path, in_gray=False):
+
+    if in_gray:
+        im = cv2.imread(im_path, cv2.IMREAD_GRAYSCALE)[..., None]
+        im = np.concatenate([im, im, im], axis=-1)
+    else:
+        im = cv2.cvtColor(cv2.imread(im_path), cv2.COLOR_BGR2RGB)
 
     im = manual_padding(im, n_pooling_layers=4)
     if len(im.shape) == 2:
@@ -339,7 +346,7 @@ def get_gt_image(gt_path):
         return gt
 
 
-def validation_image_generator(paths, batch_size=1, rgb_preprocessor=None):
+def validation_image_generator(paths, batch_size=1, rgb_preprocessor=None, in_gray=False):
     _, n_images = paths.shape
     rgb = True if rgb_preprocessor else False
     i = 0
@@ -353,7 +360,7 @@ def validation_image_generator(paths, batch_size=1, rgb_preprocessor=None):
             im_path = paths[0][i]
             gt_path = paths[1][i]
 
-            im = get_image(im_path)
+            im = get_image(im_path, in_gray)
             gt = get_gt_image(gt_path)
             if rgb:
                 batch_x.append(rgb_preprocessor(im))
@@ -368,7 +375,7 @@ def validation_image_generator(paths, batch_size=1, rgb_preprocessor=None):
 
 # This version applies a random transformation to each input pair before feeding it to the model
 def train_image_generator(paths, input_size, batch_size=1, count_samples_mode=False,
-                          rgb_preprocessor=None, data_augmentation=True):
+                          rgb_preprocessor=None, data_augmentation=True, in_gray=False):
     _, n_images = paths.shape
     rgb = True if rgb_preprocessor else False
 
@@ -422,7 +429,7 @@ def train_image_generator(paths, input_size, batch_size=1, count_samples_mode=Fa
                 im_path = paths[0][i]
                 gt_path = paths[1][i]
 
-                or_im = get_image(im_path)
+                or_im = get_image(im_path, in_gray)
                 or_gt = get_gt_image(gt_path)
 
             if input_size:
@@ -519,13 +526,13 @@ def compare_masks(gt_mask, pred_mask, bg_color):
     return new_image
 
 
-def test_image_from_path(model, input_path, gt_path, rgb_preprocessor=None, verbose=0):
+def test_image_from_path(model, input_path, gt_path, rgb_preprocessor=None, in_gray=False, verbose=0):
     if rgb_preprocessor is None:
         rgb_preprocessor = get_preprocessor(model)
     rgb = True if rgb_preprocessor else False
     if rgb:
         prediction = model.predict(
-            rgb_preprocessor(get_image(input_path))[None, ...], verbose=verbose)[0, ...]
+            rgb_preprocessor(get_image(input_path, in_gray))[None, ...], verbose=verbose)[0, ...]
 
     if gt_path:
         gt = get_gt_image(gt_path)[..., 0]
@@ -575,7 +582,7 @@ def evaluate_model_on_paths(model, paths, output_folder, args):
         name, extension = os.path.splitext(name)
         # extension = ".png"
 
-        [im, gt, pred] = test_image_from_path(model, img_path, gt_path, rgb_preprocessor=None)
+        [im, gt, pred] = test_image_from_path(model, img_path, gt_path, in_gray=args.in_gray, rgb_preprocessor=None)
 
         x_color = cv2.imread(img_path)
         or_shape = x_color.shape
